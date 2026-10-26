@@ -49,6 +49,17 @@ def register_branch(branch: schemas.BranchCreate, db: Session = Depends(get_db))
     return new_branch
 
 
+@app.get("/gyms", response_model=list[schemas.GymResponse])
+def list_gyms(db: Session = Depends(get_db)):
+    """Fetch all registered gyms."""
+    statement = (
+        select(models.Gym)
+        .options(selectinload(models.Gym.branches))
+        .order_by(models.Gym.name)
+    )
+    return list(db.scalars(statement))
+
+
 @app.get("/gyms/{gym_id}", response_model=schemas.GymResponse)
 def get_gym_details(gym_id: int, db: Session = Depends(get_db)):
     """Fetch a gym and all of its branches."""
