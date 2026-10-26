@@ -5,7 +5,7 @@ import streamlit as st
 
 API_URL = "http://127.0.0.1:8000"
 
-st.set_page_config(page_title="Gym Manager", page_icon="GM", layout="wide")
+st.set_page_config(page_title="Gym Manager", layout="wide")
 st.markdown(
     """
     <style>
@@ -52,6 +52,8 @@ def get_gym(gym_id: int):
 
 
 st.markdown('<div class="hero"><h1>Gym Manager</h1><p>Manage your gyms and branch locations in one simple place.</p></div>', unsafe_allow_html=True)
+if st.button("Refresh gym list"):
+    st.rerun()
 gyms, load_error = get_gyms()
 if load_error:
     st.warning(load_error)
@@ -104,14 +106,14 @@ with add_gym_tab:
         with right:
             phone = st.text_input("Phone number", placeholder="e.g. +91 98765 43210")
             address = st.text_input("Main address", placeholder="Street, area, city")
-        submitted = st.form_submit_button("Save gym", use_container_width=True)
+        submitted = st.form_submit_button("Add gym", type="primary", use_container_width=True)
     if submitted:
         payload = {"name": name, "owner_name": owner_name, "phone": phone, "address": address}
         try:
             response = requests.post(f"{API_URL}/gyms", json=payload, timeout=10)
             if response.ok:
                 st.success(f"{response.json()['name']} was added successfully.")
-                st.rerun()
+                st.info("Use **Refresh gym list** to see it in the directory or add a branch.")
             else:
                 st.error(api_error(response))
         except requests.RequestException:
@@ -130,14 +132,14 @@ with add_branch_tab:
                 city = st.text_input("City", placeholder="e.g. Bengaluru")
             with right:
                 branch_address = st.text_input("Branch address", placeholder="Street, area")
-            submitted = st.form_submit_button("Save branch", use_container_width=True)
+            submitted = st.form_submit_button("Add branch", type="primary", use_container_width=True)
         if submitted:
             payload = {"gym_id": branch_gym["id"], "name": branch_name, "address": branch_address, "city": city}
             try:
                 response = requests.post(f"{API_URL}/branches", json=payload, timeout=10)
                 if response.ok:
                     st.success(f"{response.json()['name']} was added successfully.")
-                    st.rerun()
+                    st.info("Use **Refresh gym list** to see the new branch in the directory.")
                 else:
                     st.error(api_error(response))
             except requests.RequestException:
